@@ -318,7 +318,7 @@ func complementary_palette(dominant : Color) -> Array:
 	################################
 	##One Colour->8 Colour Palette##
 	################################
-	#analagous
+	#complementary_palette - new palette just dropped
 	var colors: Array[Color] = []
 	# Provided colour is the Dominant Colour
 	colors.append(dominant)
