@@ -288,46 +288,47 @@ func complementary_palette(dominant : Color) -> Array:
 	var dominant_lowerV : Color = dominant
 	var dominant_lowerS : Color = dominant
 	
-	var dominant_grey_lowV_highS : Color = dominant
+	var dominant_shade : Color = dominant
 	var dominant_grey_highV_lowS : Color = dominant
 	var dominant_grey_lowV_lowS : Color = dominant
 	
 	var complement_bright : Color = dominant
 	var complement_dull : Color = dominant
 	
-	### create complementary colour & a lower saturation/value version of it
-	complement_bright.h  = wrapf(dominant.h + 0.5 + randf_range(-0.02,0.02), 0.0, 1.0)
-	complement_bright.s  = dominant.s*0.9
-	complement_bright.v  = dominant.v*0.9
-	colors.append(complement_bright)
-	
-	### create a lower saturation/value version of the complement
-	complement_dull = complement_bright
-	complement_dull.s = complement_bright.s/2
-	complement_dull.v = complement_bright.v/2
-	colors.append(complement_dull)
-	
-	
-	### create two harmonious colours
+	### create two harmonious colours 
 	dominant_lowerV.v = dominant.v/2
 	colors.append(dominant_lowerV)
+	
 	dominant_lowerS.s = dominant.s/2
 	colors.append(dominant_lowerS)
 	
+	# Dark shade
+	dominant_shade.s = clamp(dominant.s + (1-dominant.s)/2, 0.0, 1.0)
+	dominant_shade.v = clamp(dominant.v/4, 0.0, 1.0)
+	colors.append(dominant_shade)
 	
-	### create three greys:
-	dominant_grey_lowV_highS.s = 1.0
-	dominant_grey_lowV_highS.v = randf_range(0.1,0.2)
-	colors.append(dominant_grey_lowV_highS)
-	
-	dominant_grey_highV_lowS.s = randf_range(0.05,0.2)
+	# Near white
+	dominant_grey_highV_lowS.s = randf_range(0.00,0.1)
 	dominant_grey_highV_lowS.v = randf_range(0.8,0.95)
 	colors.append(dominant_grey_highV_lowS)
 	
+	# Near black
 	dominant_grey_lowV_lowS.s = randf_range(0.05,0.2)
 	dominant_grey_lowV_lowS.v = randf_range(0.05,0.2)
 	colors.append(dominant_grey_lowV_lowS)
 	
+	
+	### create complementary colour & a lower saturation/value version of it
+	complement_bright.h  = wrapf(dominant.h + 0.5 + randf_range(-0.05,0.05), 0.0, 1.0)
+	complement_bright.s  = dominant.s*randf_range(0.8,0.9)
+	complement_bright.v  = dominant.v*randf_range(0.8,0.9)
+	colors.append(complement_bright)
+	
+	### create a lower saturation/value version of the complement
+	complement_dull = complement_bright
+	complement_dull.s = complement_bright.s*randf_range(0.45,0.6)
+	complement_dull.v = complement_bright.v*randf_range(0.45,0.6)
+	colors.append(complement_dull)
 	#colors.shuffle()
 	
 	return colors
