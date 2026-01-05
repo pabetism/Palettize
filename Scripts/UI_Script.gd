@@ -198,7 +198,8 @@ func set_palette() :
 		palette_colors = triadiac_palette(color)
 	if index == 6: #Tetradic
 		palette_colors = tetradic_palette(color)
-		
+	
+	assert(len(palette_colors)==8)
 	set_all_colours(palette_colors)
 	
 	
@@ -246,7 +247,7 @@ func analagous_palette(color : Color) -> Array:
 	colors.append(color_neighbor_1)
 	
 	### create neighbor colour 2
-	color_neighbor_2.h  = base_hue + wrapf(randf_range(-0.125,0.125), 0.0, 1.0)
+	color_neighbor_2.h  = wrapf(base_hue + randf_range(-0.125,0.125), 0.0, 1.0)
 	color_neutral_2 = color_neighbor_2
 	colors.append(color_neighbor_2)
 	
@@ -275,12 +276,60 @@ func analagous_palette(color : Color) -> Array:
 	
 	return colors
 
-func complementary_palette(color : Color) -> Array:
+func complementary_palette(dominant : Color) -> Array:
 	################################
 	##One Colour->8 Colour Palette##
 	################################
-	#Complementary
-	var colors : Array = [color,Color(),Color(),Color(),Color(),Color(),Color(),Color()]
+	#analagous
+	var colors: Array[Color] = []
+	# Provided colour is the Dominant Colour
+	colors.append(dominant)
+	# We want to grab the hue from it (hue is float ranging from 0 to 1, both of which are read) and ready a couple of copies of the og colour to have their hue modified slightly
+	var dominant_lowerV : Color = dominant
+	var dominant_lowerS : Color = dominant
+	
+	var dominant_grey_lowV_highS : Color = dominant
+	var dominant_grey_highV_lowS : Color = dominant
+	var dominant_grey_lowV_lowS : Color = dominant
+	
+	var complement_bright : Color = dominant
+	var complement_dull : Color = dominant
+	
+	### create complementary colour & a lower saturation/value version of it
+	complement_bright.h  = wrapf(dominant.h + 0.5 + randf_range(-0.02,0.02), 0.0, 1.0)
+	complement_bright.s  = dominant.s*0.9
+	complement_bright.v  = dominant.v*0.9
+	colors.append(complement_bright)
+	
+	### create a lower saturation/value version of the complement
+	complement_dull = complement_bright
+	complement_dull.s = complement_bright.s/2
+	complement_dull.v = complement_bright.v/2
+	colors.append(complement_dull)
+	
+	
+	### create two harmonious colours
+	dominant_lowerV.v = dominant.v/2
+	colors.append(dominant_lowerV)
+	dominant_lowerS.s = dominant.s/2
+	colors.append(dominant_lowerS)
+	
+	
+	### create three greys:
+	dominant_grey_lowV_highS.s = 1.0
+	dominant_grey_lowV_highS.v = randf_range(0.1,0.2)
+	colors.append(dominant_grey_lowV_highS)
+	
+	dominant_grey_highV_lowS.s = randf_range(0.05,0.2)
+	dominant_grey_highV_lowS.v = randf_range(0.8,0.95)
+	colors.append(dominant_grey_highV_lowS)
+	
+	dominant_grey_lowV_lowS.s = randf_range(0.05,0.2)
+	dominant_grey_lowV_lowS.v = randf_range(0.05,0.2)
+	colors.append(dominant_grey_lowV_lowS)
+	
+	#colors.shuffle()
+	
 	return colors
 
 func splitComplementary_palette(color) -> Array:
