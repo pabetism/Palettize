@@ -23,7 +23,6 @@ const InitialWhi : Color = Color(0.9, 0.9, 0.9, 1.0)
 @onready var Btn_Random = $Buttons/Btn_Random
 @onready var Btn_Shuffle = $Buttons/Btn_Shuffle_Colors
 
-const InitialPal : Color = Color(0.2, 0.2, 0.2, 1.0) 
 @onready var Btn_Palette = $Buttons/Btn_Palette
 @onready var Pal_Slider = $Buttons/Pal
 @onready var Btn_Paltze_Meth = $Buttons/Btn_Paltze_Meth
@@ -45,6 +44,7 @@ func _ready() -> void:
 	################################
 	# Set Initial Slider Colours
 	Red_Slider.color = InitialRed
+	Pal_Slider.color = InitialRed
 	Gre_Slider.color = InitialGre
 	Blu_Slider.color = InitialBlu
 	Yel_Slider.color = InitialYel
@@ -52,6 +52,7 @@ func _ready() -> void:
 	Mag_Slider.color = InitialMag
 	Bla_Slider.color = InitialBla
 	Whi_Slider.color = InitialWhi
+	
 	# Connect Each Slider to the appropriate function _on_XXX_color_changed
 	Red_Slider.color_changed.connect(_on_red_color_changed)
 	Gre_Slider.color_changed.connect(_on_gre_color_changed)
@@ -91,7 +92,7 @@ func _ready() -> void:
 	# Connect Palette Button to set_palette function
 	# This is not yet implamented, the set_palette func currently does nothing ONE DAY
 	
-	Pal_Slider.color = InitialPal
+	Pal_Slider.color = InitialRed
 	Btn_Palette.pressed.connect(set_palette)
 	
 	
@@ -180,89 +181,132 @@ func set_palette() :
 	var index : int =  Btn_Paltze_Meth.get_selected()
 	var color : Color = Pal_Slider.get_pick_color()
 	
+	var palette_colors : Array = []
+	#var colors: Array[Color] = []
+	
+	if index==0 : #monochromatic palette
+		palette_colors = monochromatic_palette(color)
+	if index == 1: #All One Colour
+		for i in range(8): palette_colors.append(color)
+	if index == 2: #Analagous Palette
+		palette_colors = analagous_palette(color)
+	if index == 3: #Complementary
+		palette_colors = complementary_palette(color)
+	if index == 4: #Split Complementary
+		palette_colors = splitComplementary_palette(color)
+	if index == 5: #Triadiac
+		palette_colors = triadiac_palette(color)
+	if index == 6: #Tetradic
+		palette_colors = tetradic_palette(color)
+		
+	set_all_colours(palette_colors)
+	
+	
+
+func monochromatic_palette(color : Color) -> Array:
+	## Monochromatic. This Palette Takes the given clour and generates 8 evenly spaced colours
+	# Get the base color's HSV components
+	# Godot's Color class has h, s, v properties built-in (since at least Godot 3.2)
+	var base_hue: float = color.h
+	var base_saturation: float = color.s
+	var colors : Array = []
+
+	for i in range(8):
+		# Generate a random 'value' (brightness/lightness) between 0.0 (black) and 1.0 (white)
+		# Using randf() ensures a float value in the range [0.0, 1.0]
+		var random_value: float = randf()
+
+		# Create a new color using the base hue and saturation, but the random value
+		var new_color: Color = Color.from_hsv(base_hue, base_saturation, random_value, color.a)
+		
+		colors.append(new_color)
+	return colors
+
+func analagous_palette(color : Color) -> Array:
+	################################
+	##One Colour->8 Colour Palette##
+	################################
+	#analagous
 	var colors: Array[Color] = []
-	if index==0 :
-		## Minochromatic. This Palette Takes the given clour and generates 8 evenly spaced colours
+	# Provided colour is the Dominant Colour
+	colors.append(color)
+	# We want to grab the hue from it (hue is float ranging from 0 to 1, both of which are read) and ready a couple of copies of the og colour to have their hue modified slightly
+	var base_hue: float = color.h
+	var color_neighbor_1 : Color = color
+	var color_neighbor_2: Color = color
+	var color_neutral_0 : Color = color
+	var color_neutralX_0 : Color = color
+	var color_neutral_1 : Color = color
+	var color_neutralX_1 : Color = color
+	var color_neutral_2 : Color = color
+	# the we want to grab a couple neighboring colours within .125 of the og hue (this is a quarter of the colour wheel, an eight to either side), making sure to mod it so it doesn't go over one. wrapf(hue_value, 0.0, 1.0)
+	### create neighbor colour 1
+	color_neighbor_1.h  = base_hue + wrapf(randf_range(-0.125,0.125), 0.0, 1.0)
+	color_neutral_1 = color_neighbor_1
+	colors.append(color_neighbor_1)
+	
+	### create neighbor colour 2
+	color_neighbor_2.h  = base_hue + wrapf(randf_range(-0.125,0.125), 0.0, 1.0)
+	color_neutral_2 = color_neighbor_2
+	colors.append(color_neighbor_2)
+	
+	#make the rest of the colours neutral versions of the existing generated colours
+	
+	# dominant with low saturation
+	#add two colours, dominant hue with 1/2 and 1/4 og saturation
+	color_neutral_0.s = color.s/2
+	colors.append(color_neutral_0)
+	
+	color_neutralX_0.s = color.s/4
+	colors.append(color_neutral_0)
+	
+	#add two colours, neighbor 1 hue with 1/2 and 1/4 og saturation
+	color_neutral_1.s = color_neighbor_1.s/2
+	colors.append(color_neutral_1)
+	
+	color_neutralX_1.s = color_neighbor_1.s/4
+	colors.append(color_neutral_1)
+	
+	#add one final colours, neighbor 2 hue with 1/2 og saturation
+	color_neutral_2.s = color_neighbor_2.s/2
+	colors.append(color_neutral_2)
+	
+	colors.shuffle()
+	
+	return colors
 
-		# Get the base color's HSV components
-		# Godot's Color class has h, s, v properties built-in (since at least Godot 3.2)
-		var base_hue: float = color.h
-		var base_saturation: float = color.s
+func complementary_palette(color : Color) -> Array:
+	################################
+	##One Colour->8 Colour Palette##
+	################################
+	#Complementary
+	var colors : Array = [color,Color(),Color(),Color(),Color(),Color(),Color(),Color()]
+	return colors
 
-		for i in range(8):
-			# Generate a random 'value' (brightness/lightness) between 0.0 (black) and 1.0 (white)
-			# Using randf() ensures a float value in the range [0.0, 1.0]
-			var random_value: float = randf()
+func splitComplementary_palette(color) -> Array:
+	################################
+	##One Colour->8 Colour Palette##
+	################################
+	#Split Complementary
+	var colors : Array = [Color(),color,Color(),Color(),Color(),Color(),Color(),Color()]
+	return colors
 
-			# Create a new color using the base hue and saturation, but the random value
-			var new_color: Color = Color.from_hsv(base_hue, base_saturation, random_value, color.a)
-			
-			colors.append(new_color)
-	if index == 1:
-		#All One Colour
-		for i in range(8):
-			colors.append(color)
-	if index == 2:
-		#Analagous
-		# Provided colour is Dominant Colour
-		colors.append(color)
-		# We want to grab the hue from it (hue is float ranging from 0 to 1, both of which are read) and ready a couple of copies of the og colour to have their hue modified slightly
-		var base_hue: float = color.h
-		var color_neighbor_1 : Color = color
-		var color_neighbor_2: Color = color
-		var color_neutral_0 : Color = color
-		var color_neutralX_0 : Color = color
-		var color_neutral_1 : Color = color
-		var color_neutralX_1 : Color = color
-		var color_neutral_2 : Color = color
-		# the we want to grab a couple neighboring colours within .125 of the og hue (this is a quarter of the colour wheel, an eight to either side), making sure to mod it so it doesn't go over one. wrapf(hue_value, 0.0, 1.0)
-		### create neighbor colour 1
-		color_neighbor_1.h  = base_hue + wrapf(randf_range(-0.125,0.125), 0.0, 1.0)
-		color_neutral_1 = color_neighbor_1
-		colors.append(color_neighbor_1)
-		
-		### create neighbor colour 2
-		color_neighbor_2.h  = base_hue + wrapf(randf_range(-0.125,0.125), 0.0, 1.0)
-		color_neutral_2 = color_neighbor_2
-		colors.append(color_neighbor_2)
-		
-		#make the rest of the colours neutral versions of the existing generated colours
-		
-		# dominant with low saturation
-		#add two colours, dominant hue with 1/2 and 1/4 og saturation
-		color_neutral_0.s = color.s/2
-		colors.append(color_neutral_0)
-		
-		color_neutralX_0.s = color.s/4
-		colors.append(color_neutral_0)
-		
-		#add two colours, neighbor 1 hue with 1/2 and 1/4 og saturation
-		color_neutral_1.s = color_neighbor_1.s/2
-		colors.append(color_neutral_1)
-		
-		color_neutralX_1.s = color_neighbor_1.s/4
-		colors.append(color_neutral_1)
-		
-		#add one final colours, neighbor 2 hue with 1/2 og saturation
-		color_neutral_2.s = color_neighbor_2.s/2
-		colors.append(color_neutral_2)
-		
-		colors.shuffle()
-	if index == 3:
-		#Complementary
-		pass
-	if index == 4:
-		#Split Complementary
-		pass
-	if index == 5:
-		#Triadiac
-		pass
-	if index == 6:
-		#Tetradic
-		pass
-		
-	set_all_colours(colors)
+func triadiac_palette(color) -> Array:
+	################################
+	##One Colour->8 Colour Palette##
+	################################
+	#Triadiac
+	var colors : Array = [Color(),Color(),color,Color(),Color(),Color(),Color(),Color()]
+	return colors
 
+func tetradic_palette(color) -> Array:
+	################################
+	##One Colour->8 Colour Palette##
+	################################
+	#Tetradic
+	var colors : Array = [Color(),Color(),Color(),color,Color(),Color(),Color(),Color()]
+	return colors
+	
 func shuffle_colors() -> void:
 	################################
 	##Randomize Replacment Colours##

@@ -122,6 +122,14 @@ void fragment() {
 	}
 	else if ( colour_replace_function == 2 ) {
 	}
+	else if ( colour_replace_function == 3 ) {
+	}
+	else if ( colour_replace_function == 4 ) {
+	}
+	else if ( colour_replace_function == 5 ) {
+	}
+	else if ( colour_replace_function == 6 ) {
+	}
 	else {
 		tmp_col = eight_sphere_replace(tmp_col);
 	}
