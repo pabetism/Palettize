@@ -40,6 +40,11 @@ const InitialWhi : Color = Color(0.9, 0.9, 0.9, 1.0)
 
 func _ready() -> void:
 	################################
+	##    Load initial image      ##
+	################################
+	# we actually can't do this this way, since the path "res://Sprites/Beta.png" only exists before we package up this program. 
+	# load_file_from_path("res://Sprites/Beta.png")
+	################################
 	##   Slickky Slicky Sliders   ##
 	################################
 	# Set Initial Slider Colours
@@ -144,9 +149,42 @@ func load_file_from_path(path: String) -> void:
 		var texture = ImageTexture.create_from_image(image)# Convert the image data into a Texture
 		DisplayedImage.texture = texture # Set the currently displayed image to the one selected from the file.
 		print("Image loaded successfully from: ", path)
+		var proportaions : Array = loop_over_image(image)
+		print ("Random Color proportions: ", proportaions)
+
 	else:
 		print("Failed to load image from: ", path)
+		
+		
+func loop_over_image(image : Image) -> Array:
+	var y_max : int = image.get_height()
+	var x_max : int = image.get_width()
+	
+	var color_proportions : Array = []
+	
+	for i in range(8): 
+		color_proportions.append(0)
+	for x in range(0,x_max,1):
+		for y in range(y_max):
+			#print(image.get_pixel(x,y).r)
+			# calc distances
+			# find color w min distance
+			#0increment int in array associated with that color.
+			#r0 g1 b2 y3 c4 m5 k6 w7
+			#but actually just random for now
+			var closest_color : int = randi() %8
+			color_proportions[closest_color]=color_proportions[closest_color]+1
 
+	var mag : int = 0
+	for i in range(8): 
+		mag = mag + color_proportions[i]
+
+	for i in range(color_proportions.size()):
+		# Divide the current element by the divisor and update it
+		# GDScript handles integer division if the array is typed as int
+		color_proportions[i] = color_proportions[i] / mag
+	return color_proportions
+	
 func reset() -> void:
 	################################
 	##  Reset to Initial Colours  ##
